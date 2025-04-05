@@ -8,7 +8,7 @@ def normalize_hessian(hessian: torch.tensor) -> torch.Tensor:
     return hessian / hessian_magnitude.unsqueeze(-1).unsqueeze(-1)
 
 
-def create_image_maske(
+def create_image_mask(
     image: torch.tensor, dilation_size: int
 ) -> torch.Tensor:
     bg_tensor = image == 0.0

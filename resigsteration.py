@@ -13,7 +13,7 @@ from utils.finite_differences import (
 )
 from utils.helpers import (
     compute_determinant,
-    create_image_maske,
+    create_image_mask,
     normalize_hessian,
     transform_affine_3d
 )
@@ -34,7 +34,7 @@ moving_tensor = moving_parser.get_tensor(sigma, False)
 fixed_grad, fixed_hess = fd_3d_volume_derivatives(fixed_tensor)
 fixed_grad_mag_squared = torch.einsum('...i,...i', *2*(fixed_grad,))
 fixed_hess_mag_squared = torch.einsum('...ij,...ij', *2*(fixed_hess,))
-mask = create_image_maske(fixed_tensor, 5)
+mask = create_image_mask(fixed_tensor, 5)
 fixed_determinant = compute_determinant(fixed_grad, fixed_hess)
 determinant_bounds = torch.quantile(
     fixed_determinant[mask], torch.tensor([0.5, 1.0])
