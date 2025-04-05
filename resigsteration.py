@@ -14,7 +14,6 @@ from utils.finite_differences import (
 from utils.helpers import (
     compute_determinant,
     create_image_maske,
-    normalize_gradient,
     normalize_hessian,
     transform_affine_3d
 )
@@ -99,7 +98,7 @@ def evaluate(affine_matrix) -> float:
     neighbourhoods_shifted = moving_parser.position_to_index(
         neighbourhoods_position_shifted
     )
-    deformed_moving_grad, deformed_moving_hess = fd_3d_neighbourhood_derivatives(
+    _, deformed_moving_hess = fd_3d_neighbourhood_derivatives(
         moving_tensor, neighbourhoods_shifted
     )
     masked_moving_hess_mag = torch.sum(
@@ -111,9 +110,6 @@ def evaluate(affine_matrix) -> float:
     sampled_hess = normalize_hessian(sampled_hess)
     deformed_moving_hess = normalize_hessian(
         deformed_moving_hess[second_mask]
-    )
-    deformed_moving_grad = normalize_gradient(
-        deformed_moving_grad[second_mask]
     )
     similarity_calculator = HessianSimilarity(
         sampled_hess, sampled_grads, deformed_moving_hess

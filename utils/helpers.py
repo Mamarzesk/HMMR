@@ -8,12 +8,6 @@ def normalize_hessian(hessian: torch.tensor) -> torch.Tensor:
     return hessian / hessian_magnitude.unsqueeze(-1).unsqueeze(-1)
 
 
-def normalize_gradient(gradient: torch.tensor) -> torch.Tensor:
-    gradient_magnitude = torch.sum(gradient ** 2, axis=-1) ** 0.5
-    gradient_magnitude[gradient_magnitude == 0.0] = 1.0
-    return gradient / gradient_magnitude.unsqueeze(-1)
-
-
 def create_image_maske(
     image: torch.tensor, dilation_size: int
 ) -> torch.Tensor:
