@@ -13,7 +13,10 @@ class LogIO:
         )
         result = self.func(arg)
         self.evaluated_outputs.append(
-            result.detach().item() if isinstance(result, torch.Tensor)
+            (result[0].detach().item(), result[1].detach().item())
+            if isinstance(result, tuple)
+            else result.detach().item()
+            if isinstance(result, torch.Tensor)
             else result
         )
         return result
