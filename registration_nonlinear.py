@@ -157,7 +157,7 @@ def evaluate(deformation) -> torch.Tensor:
 bspline = CubicBSplineGrid3d(resolution=3 * (21,), n_channels=3)
 learning_rate = 0.0025
 optimizer = optim.Adam(bspline.parameters(), lr=learning_rate,)
-num_iterations = 10
+num_iterations = 100
 for iteration in range(num_iterations):
     optimizer.zero_grad()
     loss, reg = evaluate(bspline)
