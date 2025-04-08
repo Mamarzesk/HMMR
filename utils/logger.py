@@ -1,7 +1,6 @@
 import copy
 
 import numpy as np
-import torch
 from torch_cubic_spline_grids import CubicBSplineGrid3d
 
 
