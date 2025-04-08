@@ -1,4 +1,8 @@
+import copy
+
+import numpy as np
 import torch
+from torch_cubic_spline_grids import CubicBSplineGrid3d
 
 
 class LogIO:
@@ -8,17 +12,9 @@ class LogIO:
         self.evaluated_outputs = []
 
     def __call__(self, arg):
-        self.evaluated_inputs.append(
-            arg.detach().numpy() if isinstance(arg, torch.Tensor) else arg
-        )
+        self.log_inputs(arg)
         result = self.func(arg)
-        self.evaluated_outputs.append(
-            (result[0].detach().item(), result[1].detach().item())
-            if isinstance(result, tuple)
-            else result.detach().item()
-            if isinstance(result, torch.Tensor)
-            else result
-        )
+        self.log_outputs(result)
         return result
 
     def get_logged_inputs(self):
@@ -26,3 +22,17 @@ class LogIO:
 
     def get_logged_outputs(self):
         return self.evaluated_outputs
+
+    def log_inputs(self, arg):
+        if isinstance(arg, CubicBSplineGrid3d):
+            self.evaluated_inputs.append(copy.deepcopy(arg))
+        if isinstance(arg, np.ndarray):
+            self.evaluated_inputs.append(arg)
+
+    def log_outputs(self, result):
+        if isinstance(result, tuple):
+            self.evaluated_outputs.append(
+                (result[0].detach().item(), result[1].detach().item())
+            )
+        if isinstance(result, np.floating):
+            self.evaluated_outputs.append(result)
