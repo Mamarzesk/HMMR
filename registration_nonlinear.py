@@ -169,8 +169,6 @@ bspline_coefficients = []
 bspline_coefficients.append(next(bspline.parameters()).data.numpy().flatten())
 
 
-print(evaluate.evaluated_outputs)
-print([validate_nonlinear(inp) for inp in evaluate.evaluated_inputs])
 np.savetxt(
     f'{output_file_name}_nonlinear_results.csv',
     np.array([
