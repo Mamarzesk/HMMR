@@ -101,18 +101,12 @@ def evaluate(deformation) -> torch.Tensor:
         + transform_affine_3d(neighbourhoods_position_grid, affine_matrix)
     )
     nonlinear_deformation = deformation(mask_position_grid)
-    mask_position_grid_shifted = (
-        mask_position_grid
-        + nonlinear_deformation
-        + transform_affine_3d(mask_position_grid, affine_matrix)
-    )
     neighbourhoods_position_shifted = fixed_parser.grid_to_position(
         neighbourhoods_position_grid_shifted, torch.tensor([0., 1.])
     )
     deformation_jacobian = compute_deformation_jacobian(
         mask_position_grid, nonlinear_deformation
     )
-    # deformation_jacobian -= torch.tile(torch.eye(3), (samples_count, 1, 1))
     reg = 100 * torch.mean(deformation_jacobian ** 2)
     neighbourhoods_shifted = moving_parser.position_to_index(
         neighbourhoods_position_shifted
