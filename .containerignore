@@ -1,0 +1,7 @@
+.git
+Containerfile
+*.md
+example.py
+__pycache__
+.venv
+.gitignore
