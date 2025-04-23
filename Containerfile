@@ -1,8 +1,4 @@
-FROM ubuntu:22.04
-
-WORKDIR /code
-
-COPY . .
+FROM ubuntu:22.04 as base
 
 WORKDIR /minc
 
@@ -23,4 +19,17 @@ RUN apt-get update && apt-get -y --no-install-recommends install \
     --index-url https://download.pytorch.org/whl/cu126 \
     && rm -rf /var/lib/apt/lists/*
 
+FROM base as runner
+
+WORKDIR /code
+
+COPY . .
+
 CMD ["bash", "/code/start.sh"]
+
+FROM base as dev
+
+WORKDIR /code
+
+ENTRYPOINT ["/bin/bash"]
+# CMD []
