@@ -21,17 +21,31 @@ def create_image_mask(
 
 
 def transform_affine_3d(
-        points: torch.Tensor, affine_matrix: torch.Tensor
+        points: torch.Tensor,
+        affine_matrix: torch.Tensor,
+        force_rigid: bool = False
 ) -> torch.Tensor:
-    return (torch.einsum(
-        'ij,...j->...i', affine_matrix[:, :-1].double(), points.double()
-    ) + affine_matrix[:, -1]).float()
+    if not force_rigid:
+        transformed_points = torch.einsum(
+            'ij,...j->...i', affine_matrix[:, :-1].double(), points.double()
+        )
+        return (transformed_points + affine_matrix[:, -1]).float()
+
+    u, _, v = torch.linalg.svd(affine_matrix[:, :-1] + torch.eye(3))
+    if torch.linalg.det(u @ v) < 0:
+        u[:, -1] *= -1
+    rotation_matrix = u @ v - torch.eye(3)
+    rotation_matrix = rotation_matrix.double()
+    transformed_points = torch.einsum(
+        'ij,...j->...i', rotation_matrix, points.double()
+    )
+    return (transformed_points + affine_matrix[:, -1]).float()
 
 
 def compute_determinant(
-    gradient: torch.Tensor, hessian:torch.Tensor
+    gradient: torch.Tensor, hessian: torch.Tensor
 ) -> torch.Tensor:
-    dyadic = torch.einsum('...i,...j->...ij',*2*(gradient,))
+    dyadic = torch.einsum('...i,...j->...ij', *2*(gradient,))
     xx = torch.sum(hessian * hessian, axis=(-1, -2))
     yy = torch.sum(dyadic * dyadic, axis=(-1, -2))
     xy = torch.sum(hessian * dyadic, axis=(-1, -2))

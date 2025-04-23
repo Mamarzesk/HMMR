@@ -26,6 +26,7 @@ moving_file = os.getenv('moving_file')
 output_file_name = os.getenv('output_file_name')
 tag_file = os.getenv('tag_file')
 sigma = float(os.getenv('sigma'))
+force_rigid = os.getenv('force_rigid').lower() == 'true'
 fixed_parser = PyMincParser(fixed_file)
 moving_parser = PyMincParser(moving_file)
 tag_file_parser = TagFileParser(tag_file)
@@ -63,7 +64,7 @@ def validate_affine(affine_matrix):
     affine_matrix = affine_matrix.reshape(3, 4)
     moved_us_grid = (
         us_landmarks_grid +
-        transform_affine_3d(us_landmarks_grid.double(), affine_matrix.double())
+        transform_affine_3d(us_landmarks_grid.double(), affine_matrix.double(), force_rigid)
     )
     moved_us_landmarks = fixed_parser.grid_to_position(
         moved_us_grid, torch.tensor([0., 1.])
@@ -88,7 +89,7 @@ def evaluate(affine_matrix) -> float:
     )
     neighbourhoods_position_grid_shifted = (
         neighbourhoods_position_grid
-        + transform_affine_3d(neighbourhoods_position_grid, affine_matrix)
+        + transform_affine_3d(neighbourhoods_position_grid, affine_matrix, force_rigid)
     )
     neighbourhoods_position_shifted = fixed_parser.grid_to_position(
         neighbourhoods_position_grid_shifted, torch.tensor([0., 1.])
