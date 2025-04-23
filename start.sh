@@ -2,6 +2,10 @@ echo "checking python imports"
 
 python3 /code/check_imports.py
 
+echo "listing data directory. BITE and RESECT should be present"
+
+ls /data
+
 source /opt/minc/1.9.18/minc-toolkit-config.sh
 
 echo "checking minc toolkit"
