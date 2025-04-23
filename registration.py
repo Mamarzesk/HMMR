@@ -119,7 +119,7 @@ def evaluate(affine_matrix) -> float:
     return -f.detach().numpy()
 
 
-bounds = 12*[(-0.03, 0.03)]
+bounds = 12*[(-0.05, 0.05)]
 res = differential_evolution(
     evaluate, bounds=bounds, maxiter=100, popsize=1, polish=False,
     workers=1, tol=0.001, disp=True, atol=0, x0=12*[0.],
