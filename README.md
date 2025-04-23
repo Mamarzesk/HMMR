@@ -21,4 +21,3 @@ Affine registration can be performed using this command:
 |fixed_file      |ReconUS      |US3DT         |US_test                  |US_post_test             |
 |moving_file     |mr           |MR            |FLAIR_test<br>T1_test_reg|FLAIR_test<br>T1_test_reg|
 |tag_file        |X_all        |Tags          |CaseX-MRI-beforeUS       |CaseX-MRI-afterUS        |
-=======
