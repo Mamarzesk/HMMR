@@ -1,0 +1,36 @@
+# compose.yaml
+
+services:
+  runner:
+    image: hmmr:latest
+    build: .
+    target: runner
+    volumes:
+      - type: bind
+        source: ~/data/preprocessed/HMMR
+        target: /data
+        bind:
+          selinux: Z
+    profiles:
+      - runner
+
+  dev:
+    image: hmmr:dev
+    build: .
+    target: dev
+    volumes:
+      - type: bind
+        source: ~/data/preprocessed/HMMR
+        target: /data
+        bind:
+          selinux: Z
+    volumes:
+      - type: bind
+        source: .
+        target: /code
+        bind:
+          selinux: Z
+    profiles:
+      - dev
+    stdin_open: true
+    tty: true
