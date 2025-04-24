@@ -11,8 +11,6 @@ services:
         target: /data
         bind:
           selinux: Z
-    profiles:
-      - runner
 
   dev:
     image: hmmr:dev
@@ -30,7 +28,5 @@ services:
         target: /code
         bind:
           selinux: Z
-    profiles:
-      - dev
     stdin_open: true
     tty: true
