@@ -7,8 +7,6 @@ services:
       target: runner
       tags: 
         - "hmmr:latest"
-    stdin_open: false
-    tty: false
     volumes:
       - type: bind
         source: $HOME/data/preprocessed/HMMR
