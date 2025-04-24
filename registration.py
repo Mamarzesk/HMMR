@@ -23,12 +23,19 @@ from utils.similarity import HessianSimilarity
 def register(fixed, moving, tag, output, sigma, force_rigid=False):
     pass
 
-fixed_file = os.getenv('fixed_file')
-moving_file = os.getenv('moving_file')
-output_file_name = os.getenv('output_file_name')
-tag_file = os.getenv('tag_file')
-sigma = float(os.getenv('sigma'))
-force_rigid = os.getenv('force_rigid').lower() == 'true'
+
+def register_from_env():
+    fixed_file = os.getenv('fixed_file')
+    moving_file = os.getenv('moving_file')
+    tag_file = os.getenv('tag_file')
+    output_file_name = os.getenv('output_file_name')
+    _sigma = os.getenv('sigma')
+    if _sigma is None:
+        raise RuntimeError("sigma environment not defined")
+    sigma = float(_sigma)
+    force_rigid = os.getenv('force_rigid').lower() == 'true'
+    register(fixed_file, moving_file, tag_file, output_file_name, sigma, force_rigid)
+
 fixed_parser = PyMincParser(fixed_file)
 moving_parser = PyMincParser(moving_file)
 tag_file_parser = TagFileParser(tag_file)
