@@ -31,5 +31,4 @@ FROM base as dev
 
 WORKDIR /code
 
-ENTRYPOINT ["/bin/bash"]
-# CMD []
+CMD ["bash"]

@@ -2,31 +2,36 @@
 
 services:
   runner:
-    image: hmmr:latest
-    build: .
-    target: runner
+    build: 
+      context: .
+      target: runner
+      tags: 
+        - "hmmr:latest"
+    stdin_open: false
+    tty: false
     volumes:
       - type: bind
-        source: ~/data/preprocessed/HMMR
+        source: $HOME/data/preprocessed/HMMR
         target: /data
         bind:
           selinux: Z
 
   dev:
-    image: hmmr:dev
-    build: .
-    target: dev
+    build: 
+      context: .
+      target: dev
+      tags: 
+        - "hmmr:dev"
+    stdin_open: true
+    tty: true
     volumes:
       - type: bind
-        source: ~/data/preprocessed/HMMR
+        source: $HOME/data/preprocessed/HMMR
         target: /data
         bind:
           selinux: Z
-    volumes:
       - type: bind
         source: .
         target: /code
         bind:
           selinux: Z
-    stdin_open: true
-    tty: true
