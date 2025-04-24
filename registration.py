@@ -20,6 +20,8 @@ from utils.helpers import (
 from utils.logger import LogIO
 from utils.similarity import HessianSimilarity
 
+def register(fixed, moving, tag, output, sigma, force_rigid=False):
+    pass
 
 fixed_file = os.getenv('fixed_file')
 moving_file = os.getenv('moving_file')
