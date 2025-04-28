@@ -62,6 +62,67 @@ def register(
     samples = torch.randint(fixed_mask_indices.shape[0], (samples_count,))
 
     bounds = 12 * [(-0.05, 0.05)]
+
+    def validate_affine(
+        affine_matrix,
+    ):
+        affine_matrix = torch.tensor(affine_matrix)
+        affine_matrix = affine_matrix.reshape(3, 4)
+        moved_us_grid = us_landmarks_grid + transform_affine_3d(
+            us_landmarks_grid.double(), affine_matrix.double(), force_rigid
+        )
+        moved_us_landmarks = fixed_parser.grid_to_position(
+            moved_us_grid, torch.tensor([0.0, 1.0])
+        )
+        landmarks_diff = moved_us_landmarks - mr_landmarks
+        return torch.mean(torch.linalg.norm((landmarks_diff), axis=1)).item()
+
+    @LogIO
+    def evaluate(
+        affine_matrix,
+    ) -> float:
+        affine_matrix = torch.tensor(affine_matrix)
+        affine_matrix = affine_matrix.reshape(3, 4)
+        sampled_hess = masked_fixed_hess[samples]
+        sampled_grads = masked_fixed_grad[samples]
+        sampled_indices = fixed_mask_indices[samples]
+        sampled_neighbourhood_indices = neighbourhood_indices(sampled_indices)
+        neighbourhoods_position = fixed_parser.compute_positions(
+            sampled_neighbourhood_indices
+        )
+        neighbourhoods_position_grid = fixed_parser.position_to_grid(
+            neighbourhoods_position, torch.tensor([0.0, 1.0])
+        )
+        neighbourhoods_position_grid_shifted = (
+            neighbourhoods_position_grid
+            + transform_affine_3d(
+                neighbourhoods_position_grid, affine_matrix, force_rigid
+            )
+        )
+        neighbourhoods_position_shifted = fixed_parser.grid_to_position(
+            neighbourhoods_position_grid_shifted, torch.tensor([0.0, 1.0])
+        )
+        neighbourhoods_shifted = moving_parser.position_to_index(
+            neighbourhoods_position_shifted
+        )
+        _, deformed_moving_hess = fd_3d_neighbourhood_derivatives(
+            moving_tensor, neighbourhoods_shifted
+        )
+        masked_moving_hess_mag = torch.sum(deformed_moving_hess**2, axis=(-1, -2))
+        second_mask = masked_moving_hess_mag > denominator_threshold
+        sampled_hess = sampled_hess[second_mask]
+        sampled_grads = sampled_grads[second_mask]
+        sampled_hess = normalize_hessian(sampled_hess)
+        deformed_moving_hess = normalize_hessian(deformed_moving_hess[second_mask])
+        similarity_calculator = HessianSimilarity(
+            sampled_hess, sampled_grads, deformed_moving_hess
+        )
+        s_map = similarity_calculator.compute_map()
+        s_map = s_map[~torch.isnan(s_map)]
+        s_map = s_map[~torch.isinf(s_map)]
+        f = s_map.mean()
+        return -f.detach().numpy()
+
     res = differential_evolution(
         evaluate,
         bounds=bounds,
@@ -85,7 +146,6 @@ def register(
         delimiter=",",
     )
     np.savetxt(f"{output}_affine_transformation.csv", res.x, delimiter=",")
-    pass
 
 
 def register_from_env():
@@ -99,76 +159,3 @@ def register_from_env():
     sigma = float(_sigma)
     force_rigid = os.getenv("force_rigid").lower() == "true"
     register(fixed_file, moving_file, tag_file, output_file_name, sigma, force_rigid)
-
-
-def validate_affine(
-    affine_matrix,
-    fixed_parser,
-    mr_landmarks,
-    us_landmarks_grid,
-    force_rigid,
-):
-    affine_matrix = torch.tensor(affine_matrix)
-    affine_matrix = affine_matrix.reshape(3, 4)
-    moved_us_grid = us_landmarks_grid + transform_affine_3d(
-        us_landmarks_grid.double(), affine_matrix.double(), force_rigid
-    )
-    moved_us_landmarks = fixed_parser.grid_to_position(
-        moved_us_grid, torch.tensor([0.0, 1.0])
-    )
-    landmarks_diff = moved_us_landmarks - mr_landmarks
-    return torch.mean(torch.linalg.norm((landmarks_diff), axis=1)).item()
-
-
-@LogIO
-def evaluate(
-    affine_matrix,
-    samples,
-    masked_fixed_hess,
-    masked_fixed_grad,
-    fixed_mask_indices,
-    moving_tensor,
-    fixed_parser,
-    moving_parser,
-    denominator_threshold,
-    force_rigid,
-) -> float:
-    affine_matrix = torch.tensor(affine_matrix)
-    affine_matrix = affine_matrix.reshape(3, 4)
-    sampled_hess = masked_fixed_hess[samples]
-    sampled_grads = masked_fixed_grad[samples]
-    sampled_indices = fixed_mask_indices[samples]
-    sampled_neighbourhood_indices = neighbourhood_indices(sampled_indices)
-    neighbourhoods_position = fixed_parser.compute_positions(
-        sampled_neighbourhood_indices
-    )
-    neighbourhoods_position_grid = fixed_parser.position_to_grid(
-        neighbourhoods_position, torch.tensor([0.0, 1.0])
-    )
-    neighbourhoods_position_grid_shifted = (
-        neighbourhoods_position_grid
-        + transform_affine_3d(neighbourhoods_position_grid, affine_matrix, force_rigid)
-    )
-    neighbourhoods_position_shifted = fixed_parser.grid_to_position(
-        neighbourhoods_position_grid_shifted, torch.tensor([0.0, 1.0])
-    )
-    neighbourhoods_shifted = moving_parser.position_to_index(
-        neighbourhoods_position_shifted
-    )
-    _, deformed_moving_hess = fd_3d_neighbourhood_derivatives(
-        moving_tensor, neighbourhoods_shifted
-    )
-    masked_moving_hess_mag = torch.sum(deformed_moving_hess**2, axis=(-1, -2))
-    second_mask = masked_moving_hess_mag > denominator_threshold
-    sampled_hess = sampled_hess[second_mask]
-    sampled_grads = sampled_grads[second_mask]
-    sampled_hess = normalize_hessian(sampled_hess)
-    deformed_moving_hess = normalize_hessian(deformed_moving_hess[second_mask])
-    similarity_calculator = HessianSimilarity(
-        sampled_hess, sampled_grads, deformed_moving_hess
-    )
-    s_map = similarity_calculator.compute_map()
-    s_map = s_map[~torch.isnan(s_map)]
-    s_map = s_map[~torch.isinf(s_map)]
-    f = s_map.mean()
-    return -f.detach().numpy()
