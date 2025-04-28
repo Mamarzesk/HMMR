@@ -1,4 +1,5 @@
 import os
+from plot_affine_results import plot_results
 from registration import register
 
 
@@ -104,12 +105,14 @@ def main(data_path):
 
 
 def run_group_experiments(group_path, cases, in_paths, out):
-    for case in cases:
-        for rigid, rigid_folder in zip([True, False], ["rigid", "affine"]):
-            for sigma in [0.0, 0.5, 1.0, 1.5, 2.0]:
-                sigma_folder = f"sigma_{str(sigma)}"
+    for rigid, rigid_folder in zip([True, False], ["rigid", "affine"]):
+        for sigma in [0.0, 0.5, 1.0, 1.5, 2.0]:
+            sigma_folder = f"sigma_{str(sigma)}"
+            sigma_output_folder = os.path.join(out, rigid_folder, sigma_folder)
+            os.makedirs(sigma_output_folder)
+            for case in cases:
                 case_path = os.path.join(group_path, case)
-                case_output_path = os.path.join(out, rigid_folder, sigma_folder, case)
+                case_output_path = os.path.join(sigma_output_folder, case)
                 os.makedirs(case_output_path)
                 fixed = os.path.join(case_path, in_paths["fixed"])
                 moving = os.path.join(case_path, in_paths["moving"])
@@ -122,6 +125,7 @@ def run_group_experiments(group_path, cases, in_paths, out):
                 tag = os.path.join(tag, tag_file)
 
                 register(fixed, moving, tag, case_output_path, sigma, force_rigid=rigid)
+            plot_results(sigma_output_folder)        
 
 
 if __name__ == "__main__":
