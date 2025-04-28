@@ -6,7 +6,7 @@ echo "listing data directory. BITE and RESECT should be present"
 
 ls /data
 
-echo "changed"
+echo "changed again"
 
 source /opt/minc/1.9.18/minc-toolkit-config.sh
 
