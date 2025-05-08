@@ -9,7 +9,8 @@ RUN apt-get update && apt-get -y --no-install-recommends install \
     python3 \
     python3-pip \
     /minc/toolkit.deb \
-    && pip install numpy \
+    && pip install matplotlib \
+    numpy \
     pyminc \
     scipy \
     torch_cubic_spline_grids \
@@ -25,7 +26,7 @@ WORKDIR /code
 
 COPY . .
 
-CMD ["bash", "/code/start.sh"]
+CMD ["bash", "/code/register_all.sh"]
 
 FROM base as dev
 

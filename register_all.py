@@ -14,7 +14,9 @@ def main(data_path):
     bite_g2 = os.path.join(data_path, "BITE", "group2")
     bite_g2_out = os.path.join(output_root, "bite_group2")
     bite_g2_cases = [
-        f.name for f in os.scandir(bite_g2) if f.is_dir() and f.name != "01"
+        f.name
+        for f in os.scandir(bite_g2)
+        if f.is_dir() and f.name not in ["01", "recon", ".mypy_cache"]
     ]
     bite_g2_paths = {
         "fixed": "ReconUS.mnc",
@@ -109,23 +111,23 @@ def run_group_experiments(group_path, cases, in_paths, out):
         for sigma in [0.0, 0.5, 1.0, 1.5, 2.0]:
             sigma_folder = f"sigma_{str(sigma)}"
             sigma_output_folder = os.path.join(out, rigid_folder, sigma_folder)
-            os.makedirs(sigma_output_folder)
+            os.makedirs(sigma_output_folder, exist_ok=True)
             for case in cases:
                 case_path = os.path.join(group_path, case)
                 case_output_path = os.path.join(sigma_output_folder, case)
-                os.makedirs(case_output_path)
+                os.makedirs(case_output_path, exist_ok=True)
                 fixed = os.path.join(case_path, in_paths["fixed"])
                 moving = os.path.join(case_path, in_paths["moving"])
                 tag = case_path
                 tag_file = in_paths["tag"]
-                if in_paths["tag_folder"]:
+                if "tag_folder" in in_paths:
                     tag = os.path.join(tag, in_paths["tag_folder"])
-                if in_paths["add_case"]:
+                if "add_case" in in_paths:
                     tag_file = f"{case}{tag_file}"
                 tag = os.path.join(tag, tag_file)
 
                 register(fixed, moving, tag, case_output_path, sigma, force_rigid=rigid)
-            plot_results(sigma_output_folder)        
+            plot_results(sigma_output_folder)
 
 
 if __name__ == "__main__":
