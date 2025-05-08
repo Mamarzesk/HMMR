@@ -33,6 +33,7 @@ def main(data_path):
         "fixed": "US3DT.mnc",
         "moving": "MR.mnc",
         "tag": "Tags.tag",
+        "folder": "3D",
         "add_case": False,
     }
     resect = os.path.join(data_path, "RESECT", "MINC")
@@ -116,6 +117,8 @@ def run_group_experiments(group_path, cases, in_paths, out):
                 case_path = os.path.join(group_path, case)
                 case_output_path = os.path.join(sigma_output_folder, case)
                 os.makedirs(case_output_path, exist_ok=True)
+                if "folder" in in_paths:
+                    case_path = os.path.join(case_path, in_paths["folder"])
                 fixed = os.path.join(case_path, in_paths["fixed"])
                 moving = os.path.join(case_path, in_paths["moving"])
                 tag = case_path
