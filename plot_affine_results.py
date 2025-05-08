@@ -21,7 +21,7 @@ def plot_results(directory):
         flat_axes[i].axis('off')
 
     for i in range(len(indices)):
-        array = np.genfromtxt(directory + indices[i], delimiter=',').T
+        array = np.genfromtxt(f"{directory}/{indices[i]}", delimiter=',').T
         flat_axes[i].scatter(
             -array[:, 0], array[:, 1], c=np.arange(array.shape[0]), cmap='rainbow', s=3
         )
