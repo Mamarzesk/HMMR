@@ -41,7 +41,7 @@ def main(data_path):
     resect_cases = [
         f.name
         for f in os.scandir(resect)
-        if f.is_dir() and f.name not in ("Case5", "Case13", "Case26")
+        if f.is_dir() and f.name not in ("Case5", "Case11", "Case13", "Case26")
     ]
     resect_pre_flair_paths = {
         "fixed": "US/US_test.mnc",
@@ -126,7 +126,8 @@ def run_group_experiments(group_path, cases, in_paths, out):
                 if "tag_folder" in in_paths:
                     tag = os.path.join(tag, in_paths["tag_folder"])
                 if "add_case" in in_paths:
-                    tag_file = f"{case}{tag_file}"
+                    if in_paths["add_case"]:
+                        tag_file = f"{case}{tag_file}"
                 tag = os.path.join(tag, tag_file)
 
                 register(fixed, moving, tag, case_output_path, sigma, force_rigid=rigid)

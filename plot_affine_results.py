@@ -33,4 +33,5 @@ def plot_results(directory):
         flat_axes[i].set_xlabel('similarity metric')
         flat_axes[i].axhline(y=2, linestyle='--', color='k')
     plt.tight_layout(pad=2.0, w_pad=0.7, h_pad=1)
-    plt.savefig("results_plot.png")
+    output_path = os.path.join(directory, "results_plot.png")
+    plt.savefig(output_path)
