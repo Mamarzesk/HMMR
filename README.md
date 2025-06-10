@@ -8,15 +8,25 @@ To run the code, these environment variables must be set in advance:
 - tag_file (.tag)
 - output_file_name
 - sigma
+- force_rigid
 
 Affine registration can be performed using this command:
 ```console
  python registration.py
 ```
+For nonlinear registration, additional environment variables must be set:
+- bspline_spacing
+- dynamic_sampling
+- affine_matrix_file (.csv)
+
+Nonlinear registration can be performed using this command:
+```console
+ python registration_nonlinear.py
+```
 
 |                | BITE<br>pre-| BITE<br>post-| RESECT<br>pre-          | RESECT<br>post-         |  
 |----------------|-------------|--------------|-------------------------|-------------------------|
-|sigma           |1.5          |1.5           |1.0                      |1.0                      |
+|sigma           |1.0          |1.0           |1.0                      |1.0                      |
 |Cases to exclude|1            |14            |11                       |5, 13, 26                |
 |fixed_file      |ReconUS      |US3DT         |US_test                  |US_post_test             |
 |moving_file     |mr           |MR            |FLAIR_test<br>T1_test_reg|FLAIR_test<br>T1_test_reg|
