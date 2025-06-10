@@ -72,7 +72,9 @@ def validate_nonlinear(deformation):
         us_landmarks_grid
         + deformation(us_landmarks_grid)
         + transform_affine_3d(
-            us_landmarks_grid.double(), affine_matrix.double()
+            us_landmarks_grid.double(),
+            affine_matrix.double(),
+            force_rigid
         )
     )
     moved_us_landmarks = fixed_parser.grid_to_position(
@@ -106,7 +108,9 @@ def evaluate(deformation) -> torch.Tensor:
     neighbourhoods_position_grid_shifted = (
         neighbourhoods_position_grid
         + deformation(neighbourhoods_position_grid)
-        + transform_affine_3d(neighbourhoods_position_grid, affine_matrix)
+        + transform_affine_3d(
+            neighbourhoods_position_grid, affine_matrix, force_rigid
+        )
     )
     nonlinear_deformation = deformation(mask_position_grid)
     neighbourhoods_position_shifted = fixed_parser.grid_to_position(
@@ -145,7 +149,7 @@ bspline = CubicBSplineGrid3d(
     resolution=moving_parser.get_bspline_grid(bspline_spacign), n_channels=3
 )
 learning_rate = 0.0025
-optimizer = optim.Adam(bspline.parameters(), lr=learning_rate,)
+optimizer = optim.Adam(bspline.parameters(), lr=learning_rate)
 num_iterations = 50
 for iteration in tqdm(range(num_iterations)):
     optimizer.zero_grad()
