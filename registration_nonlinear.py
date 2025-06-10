@@ -29,6 +29,9 @@ moving_file = os.getenv('moving_file')
 output_file_name = os.getenv('output_file_name')
 tag_file = os.getenv('tag_file')
 sigma = float(os.getenv('sigma'))
+bspline_spacign = float(os.getenv('bspline_spacing'))
+force_rigid = os.getenv('force_rigid').lower() == 'true'
+dynamic_sampling = os.getenv('dynamic_sampling').lower() == 'true'
 affine_file = os.getenv('affine_matrix_file')
 affine_matrix = np.genfromtxt(affine_file) if affine_file else np.zeros((3, 4))
 fixed_parser = PyMincParser(fixed_file)
@@ -136,7 +139,9 @@ def evaluate(deformation) -> torch.Tensor:
     return -f, -reg
 
 
-bspline = CubicBSplineGrid3d(resolution=3 * (21,), n_channels=3)
+bspline = CubicBSplineGrid3d(
+    resolution=moving_parser.get_bspline_grid(bspline_spacign), n_channels=3
+)
 learning_rate = 0.0025
 optimizer = optim.Adam(bspline.parameters(), lr=learning_rate,)
 num_iterations = 50
