@@ -59,7 +59,8 @@ mr_landmarks, us_landmarks = tag_file_parser.extract_landmarks()
 us_landmarks_grid = fixed_parser.position_to_grid(
     us_landmarks, torch.tensor([0., 1.])
 )
-samples_count = 20_000
+samples_count = 10_000
+static_samples = torch.randint(fixed_mask_indices.shape[0], (samples_count,))
 
 
 def validate_nonlinear(deformation):
@@ -79,7 +80,10 @@ def validate_nonlinear(deformation):
 
 @LogIO
 def evaluate(deformation) -> torch.Tensor:
-    samples = torch.randint(fixed_mask_indices.shape[0], (samples_count,))
+    if dynamic_sampling:
+        samples = torch.randint(fixed_mask_indices.shape[0], (samples_count,))
+    else:
+        samples = static_samples
     sampled_hess = masked_fixed_hess[samples]
     sampled_grads = masked_fixed_grad[samples]
     sampled_indices = fixed_mask_indices[samples]
