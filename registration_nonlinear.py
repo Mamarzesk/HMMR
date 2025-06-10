@@ -113,9 +113,11 @@ def evaluate(deformation) -> torch.Tensor:
         neighbourhoods_position_grid_shifted, torch.tensor([0., 1.])
     )
     deformation_jacobian = compute_deformation_jacobian(
-        mask_position_grid, nonlinear_deformation
+        # mask_position_grid, nonlinear_deformation
+        mask_position_grid, nonlinear_deformation + mask_position_grid
     )
-    reg = 100 * torch.mean(deformation_jacobian ** 2)
+    # reg = 100 * torch.mean(deformation_jacobian ** 2)
+    reg = 100 * torch.mean((torch.det(deformation_jacobian) - 1) ** 2)
     neighbourhoods_shifted = moving_parser.position_to_index(
         neighbourhoods_position_shifted
     )
