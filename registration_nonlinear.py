@@ -5,6 +5,7 @@ import numpy as np
 import torch
 from torch import optim
 from torch_cubic_spline_grids import CubicBSplineGrid3d
+from tqdm import tqdm
 
 from utils.file_parser import PyMincParser, TagFileParser
 from utils.finite_differences import (
@@ -139,7 +140,7 @@ bspline = CubicBSplineGrid3d(resolution=3 * (21,), n_channels=3)
 learning_rate = 0.0025
 optimizer = optim.Adam(bspline.parameters(), lr=learning_rate,)
 num_iterations = 50
-for iteration in range(num_iterations):
+for iteration in tqdm(range(num_iterations)):
     optimizer.zero_grad()
     loss, reg = evaluate(bspline)
     (loss-reg).backward()
