@@ -1,6 +1,7 @@
 import os
 from plot_affine_results import plot_results
 from registration import register
+from registration_nonlinear import register_nonlinear
 
 
 def main(data_path, skip_compute=False):
@@ -104,7 +105,9 @@ def main(data_path, skip_compute=False):
     for group_path, case_list, in_paths, out in zip(
         group_paths, cases_list, in_paths_list, out_list
     ):
-        run_group_experiments(group_path, case_list, in_paths, out, skip_compute=skip_compute)
+        run_group_experiments(
+            group_path, case_list, in_paths, out, skip_compute=skip_compute
+        )
 
 
 def run_group_experiments(group_path, cases, in_paths, out, skip_compute=False):
@@ -133,7 +136,45 @@ def run_group_experiments(group_path, cases, in_paths, out, skip_compute=False):
                 tag = os.path.join(tag, tag_file)
 
                 register(fixed, moving, tag, case_output_path, sigma, force_rigid=rigid)
-            plot_results(sigma_output_folder)
+            plot_results(sigma_output_folder, f"{rigid_folder} transformation, sigma = {sigma}")
+
+    rigid = True
+    bspline_spacing = 20.0
+    dynamic_sampling = True
+    folder = "non_linear"
+    sigma_folder = "sigma_1.0"
+    sigma = 1.0
+    sigma_output_folder = os.path.join(out, folder, sigma_folder)
+    os.makedirs(sigma_output_folder, exist_ok=True)
+    for case in cases:
+        if skip_compute:
+            continue
+        case_path = os.path.join(group_path, case)
+        case_output_path = os.path.join(sigma_output_folder, case)
+        os.makedirs(case_output_path, exist_ok=True)
+        if "folder" in in_paths:
+            case_path = os.path.join(case_path, in_paths["folder"])
+        fixed = os.path.join(case_path, in_paths["fixed"])
+        moving = os.path.join(case_path, in_paths["moving"])
+        tag = case_path
+        tag_file = in_paths["tag"]
+        if "tag_folder" in in_paths:
+            tag = os.path.join(tag, in_paths["tag_folder"])
+        if "add_case" in in_paths:
+            if in_paths["add_case"]:
+                tag_file = f"{case}{tag_file}"
+        tag = os.path.join(tag, tag_file)
+        register_nonlinear(
+            fixed,
+            moving,
+            tag,
+            case_output_path,
+            sigma,
+            bspline_spacing=bspline_spacing,
+            dynamic_sampling=dynamic_sampling,
+            force_rigid=rigid,
+        )
+    plot_results(sigma_output_folder, "nonlinear transformation, sigma = 1.0")
 
 
 if __name__ == "__main__":
