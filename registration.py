@@ -136,7 +136,7 @@ def register(
         x0=12 * [0.0],
     )
     np.savetxt(
-        f"{output}_affine_results.csv",
+        os.path.join(output, "affine_results.csv"),
         np.array(
             [
                 evaluate.evaluated_outputs,
@@ -145,7 +145,9 @@ def register(
         ),
         delimiter=",",
     )
-    np.savetxt(f"{output}_affine_transformation.csv", res.x, delimiter=",")
+    np.savetxt(
+        os.path.join(output, "affine_transformations.csv"), res.x, delimiter=","
+    )
 
 
 def register_from_env():

@@ -3,7 +3,7 @@ from plot_affine_results import plot_results
 from registration import register
 
 
-def main(data_path):
+def main(data_path, skip_compute=False):
     output_root = os.path.join(data_path, "output")
     datasets = [f.name for f in os.scandir(data_path) if f.is_dir()]
     if "BITE" not in datasets:
@@ -104,16 +104,18 @@ def main(data_path):
     for group_path, case_list, in_paths, out in zip(
         group_paths, cases_list, in_paths_list, out_list
     ):
-        run_group_experiments(group_path, case_list, in_paths, out)
+        run_group_experiments(group_path, case_list, in_paths, out, skip_compute=skip_compute)
 
 
-def run_group_experiments(group_path, cases, in_paths, out):
+def run_group_experiments(group_path, cases, in_paths, out, skip_compute=False):
     for rigid, rigid_folder in zip([True, False], ["rigid", "affine"]):
         for sigma in [0.0, 0.5, 1.0, 1.5, 2.0]:
             sigma_folder = f"sigma_{str(sigma)}"
             sigma_output_folder = os.path.join(out, rigid_folder, sigma_folder)
             os.makedirs(sigma_output_folder, exist_ok=True)
             for case in cases:
+                if skip_compute:
+                    continue
                 case_path = os.path.join(group_path, case)
                 case_output_path = os.path.join(sigma_output_folder, case)
                 os.makedirs(case_output_path, exist_ok=True)
