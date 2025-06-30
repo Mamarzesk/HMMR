@@ -1,5 +1,6 @@
 import os
 from itertools import chain
+import re
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -42,3 +43,5 @@ def plot_results(directory):
 if __name__ == "__main__":
     path = "/home/raphrc/data/preprocessed/HMMR/output/resect/post/t1/affine/sigma_0.5/"
     plot_results(path)
+    # flat_axes[i].set_title(re.search(r'\d+', indices[i]).group())
+    # plt.suptitle(title)

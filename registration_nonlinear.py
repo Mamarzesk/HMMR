@@ -5,6 +5,7 @@ import numpy as np
 import torch
 from torch import optim
 from torch_cubic_spline_grids import CubicBSplineGrid3d
+from tqdm import tqdm
 
 from utils.file_parser import PyMincParser, TagFileParser
 from utils.finite_differences import (
@@ -28,6 +29,9 @@ moving_file = os.getenv('moving_file')
 output_file_name = os.getenv('output_file_name')
 tag_file = os.getenv('tag_file')
 sigma = float(os.getenv('sigma'))
+bspline_spacign = float(os.getenv('bspline_spacing'))
+force_rigid = os.getenv('force_rigid').lower() == 'true'
+dynamic_sampling = os.getenv('dynamic_sampling').lower() == 'true'
 affine_file = os.getenv('affine_matrix_file')
 affine_matrix = np.genfromtxt(affine_file) if affine_file else np.zeros((3, 4))
 fixed_parser = PyMincParser(fixed_file)
@@ -59,7 +63,8 @@ mr_landmarks, us_landmarks = tag_file_parser.extract_landmarks()
 us_landmarks_grid = fixed_parser.position_to_grid(
     us_landmarks, torch.tensor([0., 1.])
 )
-samples_count = 20_000
+samples_count = 10_000
+static_samples = torch.randint(fixed_mask_indices.shape[0], (samples_count,))
 
 
 def validate_nonlinear(deformation):
@@ -67,7 +72,9 @@ def validate_nonlinear(deformation):
         us_landmarks_grid
         + deformation(us_landmarks_grid)
         + transform_affine_3d(
-            us_landmarks_grid.double(), affine_matrix.double()
+            us_landmarks_grid.double(),
+            affine_matrix.double(),
+            force_rigid
         )
     )
     moved_us_landmarks = fixed_parser.grid_to_position(
@@ -79,7 +86,10 @@ def validate_nonlinear(deformation):
 
 @LogIO
 def evaluate(deformation) -> torch.Tensor:
-    samples = torch.randint(fixed_mask_indices.shape[0], (samples_count,))
+    if dynamic_sampling:
+        samples = torch.randint(fixed_mask_indices.shape[0], (samples_count,))
+    else:
+        samples = static_samples
     sampled_hess = masked_fixed_hess[samples]
     sampled_grads = masked_fixed_grad[samples]
     sampled_indices = fixed_mask_indices[samples]
@@ -98,16 +108,20 @@ def evaluate(deformation) -> torch.Tensor:
     neighbourhoods_position_grid_shifted = (
         neighbourhoods_position_grid
         + deformation(neighbourhoods_position_grid)
-        + transform_affine_3d(neighbourhoods_position_grid, affine_matrix)
+        + transform_affine_3d(
+            neighbourhoods_position_grid, affine_matrix, force_rigid
+        )
     )
     nonlinear_deformation = deformation(mask_position_grid)
     neighbourhoods_position_shifted = fixed_parser.grid_to_position(
         neighbourhoods_position_grid_shifted, torch.tensor([0., 1.])
     )
     deformation_jacobian = compute_deformation_jacobian(
-        mask_position_grid, nonlinear_deformation
+        # mask_position_grid, nonlinear_deformation
+        mask_position_grid, nonlinear_deformation + mask_position_grid
     )
-    reg = 100 * torch.mean(deformation_jacobian ** 2)
+    # reg = 100 * torch.mean(deformation_jacobian ** 2)
+    reg = 100 * torch.mean((torch.det(deformation_jacobian) - 1) ** 2)
     neighbourhoods_shifted = moving_parser.position_to_index(
         neighbourhoods_position_shifted
     )
@@ -131,11 +145,13 @@ def evaluate(deformation) -> torch.Tensor:
     return -f, -reg
 
 
-bspline = CubicBSplineGrid3d(resolution=3 * (21,), n_channels=3)
+bspline = CubicBSplineGrid3d(
+    resolution=moving_parser.get_bspline_grid(bspline_spacign), n_channels=3
+)
 learning_rate = 0.0025
-optimizer = optim.Adam(bspline.parameters(), lr=learning_rate,)
+optimizer = optim.Adam(bspline.parameters(), lr=learning_rate)
 num_iterations = 50
-for iteration in range(num_iterations):
+for iteration in tqdm(range(num_iterations)):
     optimizer.zero_grad()
     loss, reg = evaluate(bspline)
     (loss-reg).backward()
