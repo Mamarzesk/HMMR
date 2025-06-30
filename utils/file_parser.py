@@ -62,6 +62,12 @@ class PyMincParser:
             array[bg] = 0.0
         tensor = torch.tensor(array, dtype=torch.float32)
         return torch.permute(tensor, tuple(self.dims))
+    
+    def get_bspline_grid(self, node_spacing: float) -> Tuple[int]:
+        return tuple(
+            int(length * spacing // node_spacing)
+            for length, spacing in zip(self.size, self.spacing)
+        )
 
 
 class TagFileParser:
