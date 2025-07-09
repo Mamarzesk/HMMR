@@ -65,7 +65,7 @@ class PyMincParser:
     
     def get_bspline_grid(self, node_spacing: float) -> Tuple[int]:
         return tuple(
-            int(length * spacing // node_spacing)
+            int(length * abs(spacing) // node_spacing)
             for length, spacing in zip(self.size, self.spacing)
         )
 

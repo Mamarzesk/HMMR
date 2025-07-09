@@ -14,6 +14,7 @@ RUN apt-get update && apt-get -y --no-install-recommends install \
     pyminc \
     scipy \
     torch_cubic_spline_grids \
+    tqdm \
     && pip install torch \
     torchaudio \
     torchvision \

@@ -31,15 +31,15 @@ def register_nonlinear(
     output,
     sigma,
     bspline_spacing, 
-    affine_file = None, 
+    rigid_file = None, 
     dynamic_sampling = False,
     force_rigid = False,
 ):
-    affine_matrix = np.genfromtxt(affine_file) if affine_file else np.zeros((3, 4))
+    rigid_matrix = np.genfromtxt(rigid_file) if rigid_file else np.zeros((3, 4))
     fixed_parser = PyMincParser(fixed)
     moving_parser = PyMincParser(moving)
     tag_file_parser = TagFileParser(tag)
-    affine_matrix = torch.tensor(affine_matrix.reshape(3, 4))
+    rigid_matrix = torch.tensor(rigid_matrix.reshape(3, 4))
     fixed_tensor = fixed_parser.get_tensor(sigma, True)
     moving_tensor = moving_parser.get_tensor(sigma, False)
     fixed_grad, fixed_hess = fd_3d_volume_derivatives(fixed_tensor)
@@ -73,7 +73,7 @@ def register_nonlinear(
             us_landmarks_grid
             + deformation(us_landmarks_grid)
             + transform_affine_3d(
-                us_landmarks_grid.double(), affine_matrix.double(), force_rigid
+                us_landmarks_grid.double(), rigid_matrix.double(), force_rigid
             )
         )
         moved_us_landmarks = fixed_parser.grid_to_position(
@@ -107,7 +107,7 @@ def register_nonlinear(
         neighbourhoods_position_grid_shifted = (
             neighbourhoods_position_grid
             + deformation(neighbourhoods_position_grid)
-            + transform_affine_3d(neighbourhoods_position_grid, affine_matrix, force_rigid)
+            + transform_affine_3d(neighbourhoods_position_grid, rigid_matrix, force_rigid)
         )
         nonlinear_deformation = deformation(mask_position_grid)
         neighbourhoods_position_shifted = fixed_parser.grid_to_position(
@@ -141,6 +141,8 @@ def register_nonlinear(
         return -f, -reg
 
 
+    print(f"bspline_spacing: {bspline_spacing}, patient: {output}")
+
     bspline = CubicBSplineGrid3d(
         resolution=moving_parser.get_bspline_grid(bspline_spacing), n_channels=3
     )
@@ -170,7 +172,7 @@ def register_nonlinear(
         delimiter=",",
     )
     np.savetxt(
-        os.path.join(output, '_nonlinear_transformation.csv'),
+        os.path.join(output, 'nonlinear_transformation.csv'),
         np.array(bspline_coefficients),
         delimiter=",",
     )
