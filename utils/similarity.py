@@ -59,6 +59,46 @@ class CoplanarityMeasure:
         numerator -= 2 * self.xy * self.xz * self.yz
         return numerator / self.determinant
 
-    @ staticmethod
+    @staticmethod
     def vector_dot(vector1: torch.Tensor, vector2: torch.Tensor) -> torch.Tensor:
         return torch.sum(vector1 * vector2, axis=-1)
+
+
+class GradientSimilarity:
+    def __init__(
+        self,
+        reference_gradients: torch.Tensor,
+        template_gradients: torch.Tensor
+    ) -> None:
+        self.reference_gradients = reference_gradients
+        self.template_gradients = template_gradients
+
+    def compute_map(self) -> torch.Tensor:
+        u_mag_sq = self.vector_dot(* 2 * (self.reference_gradients,))
+        v_mag_sq = self.vector_dot(* 2 * (self.template_gradients,))
+        v_dot_u = self.vector_dot(
+            self.reference_gradients, self.template_gradients
+        )
+        return v_dot_u ** 2 / (u_mag_sq * v_mag_sq)
+
+    @staticmethod
+    def vector_dot(vector1: torch.Tensor, vector2: torch.Tensor) -> torch.Tensor:
+        return torch.sum(vector1 * vector2, axis=-1)
+
+
+class LC2:
+    def __init__(
+        self,
+        reference_gradients: torch.Tensor,
+        reference_hg: torch.Tensor,
+        template_gradients: torch.Tensor
+    ) -> None:
+        self.ref_grad = reference_gradients
+        self.ref_hg = reference_hg
+        self.tem_grad = template_gradients
+
+    def compute_map(self) -> torch.Tensor:
+        measure = CoplanarityMeasure(
+            self.ref_grad, self.ref_hg, self.tem_grad
+        )
+        return measure.compute()
