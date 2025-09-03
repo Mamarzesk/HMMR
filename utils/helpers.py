@@ -8,6 +8,12 @@ def normalize_hessian(hessian: torch.tensor) -> torch.Tensor:
     return hessian / hessian_magnitude.unsqueeze(-1).unsqueeze(-1)
 
 
+def normalize_grad(grad: torch.tensor) -> torch.tensor:
+    grad_magnitude = torch.sum(grad ** 2, axis=-1) ** 0.5
+    grad_magnitude[grad_magnitude == 0.0] = 1.0
+    return grad / grad_magnitude.unsqueeze(-1)
+
+
 def create_image_mask(
     image: torch.tensor, dilation_size: int
 ) -> torch.Tensor:
@@ -49,4 +55,13 @@ def compute_determinant(
     xx = torch.sum(hessian * hessian, axis=(-1, -2))
     yy = torch.sum(dyadic * dyadic, axis=(-1, -2))
     xy = torch.sum(hessian * dyadic, axis=(-1, -2))
+    return xx*yy - xy**2
+
+
+def compute_vector_determinant(
+    vector1: torch.Tensor, vector2:torch.Tensor
+) -> torch.Tensor:
+    xx = torch.sum(vector1 * vector1, axis=-1)
+    yy = torch.sum(vector2 * vector2, axis=-1)
+    xy = torch.sum(vector1 * vector2, axis=-1)
     return xx*yy - xy**2
