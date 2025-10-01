@@ -64,9 +64,9 @@ class PyMincParser:
         tensor = torch.tensor(array, dtype=torch.float32)
         return torch.permute(tensor, tuple(self.dims))
     
-    def get_bspline_grid(self, node_spacing: float) -> Tuple[int]:
+    def get_bspline_grid(self, node_spacing: float) -> Tuple[int, ...]:
         grid_size = tuple(
-            int(length * abs(spacing) // node_spacing)
+            int(length * torch.abs(spacing) // node_spacing)
             for length, spacing in zip(self.size, self.spacing)
         )
         return grid_size
