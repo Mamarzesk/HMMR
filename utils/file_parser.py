@@ -25,7 +25,8 @@ class PyMincParser:
         return volumeFromFile(self.file_path)
 
     def get_dims_ordering(self) -> np.ndarray:
-        return np.argsort(self.image.getDimensionNames())
+        ordering = np.argsort(self.image.getDimensionNames())
+        return ordering
 
     def compute_positions(self, indices: torch.Tensor) -> torch.Tensor:
         return self.origin + self.spacing * indices
@@ -64,10 +65,11 @@ class PyMincParser:
         return torch.permute(tensor, tuple(self.dims))
     
     def get_bspline_grid(self, node_spacing: float) -> Tuple[int]:
-        return tuple(
+        grid_size = tuple(
             int(length * abs(spacing) // node_spacing)
             for length, spacing in zip(self.size, self.spacing)
         )
+        return grid_size
 
 
 class TagFileParser:

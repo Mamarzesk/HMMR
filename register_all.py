@@ -46,6 +46,16 @@ def main(data_path, skip_compute=False):
         for f in os.scandir(resect)
         if f.is_dir() and f.name not in ("Case5", "Case11", "Case13", "Case26")
     ]
+    # resect_pre_cases = [
+    #     "Case4",
+    #     "Case5",
+    #     "Case13",
+    #     "Case26",
+    # ]
+    # resect_post_cases = [
+    #     "Case4",
+    #     "Case11",
+    # ]
     resect_pre_flair_paths = {
         "fixed": "US/US_test.mnc",
         "moving": "MRI/FLAIR_test.mnc",
@@ -104,20 +114,37 @@ def main(data_path, skip_compute=False):
         resect_post_t1_out,
     ]
 
+    # group_paths = [resect, resect, resect, resect]
+    # cases_list = [resect_pre_cases, resect_pre_cases, resect_post_cases, resect_post_cases]
+    # in_paths_list = [resect_pre_flair_paths, resect_pre_t1_paths, resect_post_flair_paths, resect_post_t1_paths]
+    # out_list = [resect_pre_flair_out, resect_pre_t1_out, resect_post_flair_out, resect_post_t1_out]
+
+    rigid_times_cumul = []
+    affine_times_cumul = []
+    nonlinear_times_cumul = []
     for group_path, case_list, in_paths, out in zip(
         group_paths, cases_list, in_paths_list, out_list
     ):
-        run_group_experiments(
+        rigid_times, affine_times, nonlinear_times = run_group_experiments(
             group_path, case_list, in_paths, out, skip_compute=skip_compute
         )
+        rigid_times_cumul.extend(rigid_times)
+        affine_times_cumul.extend(affine_times)
+        nonlinear_times_cumul.extend(nonlinear_times)
+    print(f"average times for registration: rigid {mean(rigid_times_cumul)} s, affine {mean(affine_times_cumul)} s, nonlinear {mean(nonlinear_times_cumul)} s.")
 
 
 def run_group_experiments(group_path, cases, in_paths, out, skip_compute=False):
     rigid_times = []
     affine_times = []
     nonlinear_times = []
+    # if "post" in out:
+    #     cases.append("Case11")
+    # elif "Case11" in cases:
+    #     cases.remove("Case11")
     for rigid, rigid_folder, times in zip([True, False], ["rigid", "affine"], [rigid_times, affine_times]):
         for sigma in [0.0, 0.5, 1.0, 1.5, 2.0]:
+            continue
             sigma_folder = f"sigma_{str(sigma)}"
             sigma_output_folder = os.path.join(out, rigid_folder, sigma_folder)
             os.makedirs(sigma_output_folder, exist_ok=True)
@@ -154,11 +181,8 @@ def run_group_experiments(group_path, cases, in_paths, out, skip_compute=False):
     sigma_output_folder = os.path.join(out, folder, sigma_folder)
     rigid_folder = os.path.join(out, "rigid", sigma_folder)
     os.makedirs(sigma_output_folder, exist_ok=True)
-    cases_to_skip = []
     for case in cases:
         if skip_compute:
-            continue
-        if case in cases_to_skip:
             continue
         case_path = os.path.join(group_path, case)
         case_output_path = os.path.join(sigma_output_folder, case)
@@ -184,7 +208,8 @@ def run_group_experiments(group_path, cases, in_paths, out, skip_compute=False):
             case_output_path,
             sigma,
             bspline_spacing=bspline_spacing,
-            rigid_file=rigid_transformation,
+            # rigid_file=rigid_transformation,
+            rigid_file=None,
             dynamic_sampling=dynamic_sampling,
             force_rigid=rigid,
         )
@@ -192,7 +217,7 @@ def run_group_experiments(group_path, cases, in_paths, out, skip_compute=False):
         nonlinear_times.append(elapsed)
     plot_results(sigma_output_folder, "nonlinear transformation, sigma = 1.0", nonlinear=True)
 
-    print(f"average times for registration: rigid {mean(rigid_times)} s, affine {mean(affine_times)} s, nonlinear {mean(nonlinear_times)} s.")
+    return rigid_times, affine_times, nonlinear_times
 
 
 if __name__ == "__main__":
