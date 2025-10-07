@@ -61,6 +61,7 @@ mr_landmarks, us_landmarks = tag_file_parser.extract_landmarks()
 us_landmarks_grid = fixed_parser.position_to_grid(
     us_landmarks, torch.tensor([0., 1.])
 )
+torch.manual_seed(0)
 samples_count = 10_000
 static_samples = torch.randint(fixed_mask_indices.shape[0], (samples_count,))
 
