@@ -147,7 +147,7 @@ def run_group_experiments(group_path, cases, in_paths, out, skip_compute=False):
 
     bspline_spacing = 20.0
     dynamic_sampling = True
-    force_rigid = False
+    force_rigid = True
 
     for folder, register, times in zip(
         ["affine_gi", "affine_goa", "affine_lc2"],
