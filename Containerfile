@@ -29,6 +29,14 @@ COPY . .
 
 CMD ["bash", "/code/register_all.sh"]
 
+FROM base as runner_all_methods
+
+WORKDIR /code
+
+COPY . .
+
+CMD ["bash", "/code/register_all_methods.sh"]
+
 FROM base as dev
 
 WORKDIR /code

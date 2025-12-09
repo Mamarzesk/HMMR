@@ -14,6 +14,19 @@ services:
         bind:
           selinux: Z
 
+  runner-all-methods:
+    build: 
+      context: .
+      target: runner_all_methods
+      tags: 
+        - "hmmr-all-methods:latest"
+    volumes:
+      - type: bind
+        source: $HOME/data/preprocessed/HMMR
+        target: /data
+        bind:
+          selinux: Z
+
   dev:
     build: 
       context: .
