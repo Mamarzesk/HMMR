@@ -51,12 +51,17 @@ class PyMincParser:
         return (self.end-self.origin)*(grid - a)/(b - a) + self.origin
 
     def get_tensor(
-        self, scale: float, remove_background: bool
+        self, scale: float, remove_background: bool, noise_level: float = 0.0
     ) -> torch.Tensor:
         array = np.array(self.image.getdata().tolist())
+        array -= np.min(array)
+        array /= np.max(array)
         if remove_background:
             bg = array == 0.0
         sigma = (scale / torch.abs(self.spacing)).numpy()
+        if noise_level > 0.0:
+            noise = np.random.normal(0.0, noise_level, array.shape)
+            array += noise
         array = gaussian_filter(array, sigma=sigma)
         if remove_background:
             array[bg] = 0.0
