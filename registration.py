@@ -28,6 +28,7 @@ def register(
     output,
     sigma,
     force_rigid=False,
+    samples_count=10_000,
 ):
     fixed_parser = PyMincParser(fixed)
     moving_parser = PyMincParser(moving)
@@ -58,7 +59,6 @@ def register(
     us_landmarks_grid = fixed_parser.position_to_grid(
         us_landmarks, torch.tensor([0.0, 1.0])
     )
-    samples_count = 10_000
     samples = torch.randint(fixed_mask_indices.shape[0], (samples_count,))
 
     bounds = 12 * [(-0.05, 0.05)]

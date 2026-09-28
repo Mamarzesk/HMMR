@@ -34,6 +34,8 @@ def nonlinear_lc2(
     bspline_spacing,
     force_rigid,
     dynamic_sampling,
+    samples_count=10_000,
+    regularizer=100,
 ):
     affine_matrix = np.genfromtxt(affine) if affine else np.zeros((3, 4))
     fixed_parser = PyMincParser(fixed)
@@ -66,7 +68,6 @@ def nonlinear_lc2(
         us_landmarks, torch.tensor([0.0, 1.0])
     )
     torch.manual_seed(0)
-    samples_count = 10_000
     static_samples = torch.randint(fixed_mask_indices.shape[0], (samples_count,))
 
     def validate_nonlinear(deformation):
@@ -120,7 +121,7 @@ def nonlinear_lc2(
             nonlinear_deformation + mask_position_grid,
         )
         # reg = 100 * torch.mean(deformation_jacobian ** 2)
-        reg = 100 * torch.mean((torch.det(deformation_jacobian) - 1) ** 2)
+        reg = regularizer * torch.mean((torch.det(deformation_jacobian) - 1) ** 2)
         neighbourhoods_shifted = moving_parser.position_to_index(
             neighbourhoods_position_shifted
         )

@@ -11,6 +11,7 @@ RUN apt-get update && apt-get -y --no-install-recommends install \
     /minc/toolkit.deb \
     && pip install matplotlib \
     numpy \
+    pandas \
     pyminc \
     scipy \
     torch_cubic_spline_grids \
@@ -37,8 +38,26 @@ COPY . .
 
 CMD ["bash", "/code/register_all_methods.sh"]
 
+FROM base as runner_sample_size
+
+WORKDIR /code
+
+COPY . .
+
+CMD ["bash", "/code/register_sample_size.sh"]
+
+FROM base as runner_node_spacing
+
+WORKDIR /code
+
+COPY . .
+
+CMD ["bash", "/code/register_node_spacing.sh"]
+
 FROM base as dev
 
 WORKDIR /code
+
+COPY . .
 
 CMD ["bash"]

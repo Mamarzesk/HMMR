@@ -34,6 +34,7 @@ def register_nonlinear(
     rigid_file = None, 
     dynamic_sampling = False,
     force_rigid = False,
+    samples_count=10_000,
 ):
     rigid_matrix = np.genfromtxt(rigid_file) if rigid_file else np.zeros((3, 4))
     fixed_parser = PyMincParser(fixed)
@@ -64,7 +65,6 @@ def register_nonlinear(
     us_landmarks_grid = fixed_parser.position_to_grid(
         us_landmarks, torch.tensor([0.0, 1.0])
     )
-    samples_count = 10_000
     static_samples = torch.randint(fixed_mask_indices.shape[0], (samples_count,))
 
 

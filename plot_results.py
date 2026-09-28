@@ -1,6 +1,7 @@
 import os
 from itertools import chain
 import re
+from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -16,8 +17,9 @@ def plot_results(directory, title, nonlinear=False):
         for file in files
         if file.endswith("results.csv")
     ]
-    pattern = r'sigma_\d\.\d\/[A-Za-z]*(\d+)'
-    indices = sorted(results_files, key=lambda x: int(re.search(pattern, x).group(1)))
+    print(results_files)
+    pattern = r'[A-Za-z]*(\d+)'
+    indices = sorted(results_files, key=lambda x: int(re.search(pattern, Path(x).parent.stem).group(1)))
     ncols = 6
     fig, axes = plt.subplots(
         ncols=ncols, nrows=1 + len(indices) // ncols, figsize=(12, 9)

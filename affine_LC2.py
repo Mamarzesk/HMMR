@@ -27,6 +27,7 @@ def affine_lc2(
     output,
     sigma,
     force_rigid,
+    samples_count=10_000
 ):
     fixed_parser = PyMincParser(fixed)
     moving_parser = PyMincParser(moving)
@@ -56,7 +57,6 @@ def affine_lc2(
         us_landmarks, torch.tensor([0., 1.])
     )
     torch.manual_seed(0)
-    samples_count = 10_000
     samples = torch.randint(fixed_mask_indices.shape[0], (samples_count,))
 
 

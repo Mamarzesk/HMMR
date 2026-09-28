@@ -26,7 +26,30 @@ services:
         target: /data
         bind:
           selinux: Z
-
+  runner-sample_size:
+    build: 
+      context: .
+      target: runner_sample_size
+      tags: 
+        - "hmmr-sample_size:latest"
+    volumes:
+      - type: bind
+        source: $HOME/data/preprocessed/HMMR
+        target: /data
+        bind:
+          selinux: Z
+  runner-node-spacing:
+    build: 
+      context: .
+      target: runner_node_spacing
+      tags: 
+        - "hmmr-node-spacing:latest"
+    volumes:
+      - type: bind
+        source: $HOME/data/preprocessed/HMMR
+        target: /data
+        bind:
+          selinux: Z
   dev:
     build: 
       context: .
